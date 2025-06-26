@@ -6,32 +6,14 @@ const testDbConfig = {
   ssl: false
 };
 
-let testPool: Pool;
-
-beforeAll(async () => {
-  // Create test database pool
-  testPool = new Pool(testDbConfig);
-  
-  // Clear test database before running tests
-  await clearTestDatabase();
-});
-
-afterAll(async () => {
-  // Close database connections after tests
-  if (testPool) {
-    await testPool.end();
-  }
-});
-
-afterEach(async () => {
-  // Clean up after each test
-  await clearTestDatabase();
-});
+export let testPool: Pool;
 
 async function clearTestDatabase() {
+  if (!testPool) return;
+  
   try {
     // Delete all data from companies table
-    await testPool.query('DELETE FROM companies');
+    await testPool.query('DELETE FROM companies WHERE 1=1');
     
     // Reset auto-increment sequences
     await testPool.query('ALTER SEQUENCE companies_id_seq RESTART WITH 1');
@@ -40,4 +22,23 @@ async function clearTestDatabase() {
   }
 }
 
-export { testPool };
+export async function setupTestDatabase() {
+  // Create test database pool if it doesn't exist
+  if (!testPool) {
+    testPool = new Pool(testDbConfig);
+  }
+  
+  // Clear test database before running tests
+  await clearTestDatabase();
+}
+
+export async function cleanupTestDatabase() {
+  // Clean up after each test
+  await clearTestDatabase();
+  
+  // Close database connections after tests
+  if (testPool) {
+    await testPool.end();
+    testPool = undefined as any;
+  }
+}

@@ -5,10 +5,13 @@ import CompanyLogin from './CompanyLogin';
 
 const mockOnSwitchToRegister = jest.fn();
 
+// Mock fetch globally
+global.fetch = jest.fn();
+
 describe('CompanyLogin Component', () => {
   beforeEach(() => {
     mockOnSwitchToRegister.mockClear();
-    global.fetch = jest.fn();
+    (global.fetch as jest.Mock).mockClear();
   });
 
   afterEach(() => {
@@ -19,8 +22,8 @@ describe('CompanyLogin Component', () => {
     render(<CompanyLogin onSwitchToRegister={mockOnSwitchToRegister} />);
     
     expect(screen.getByRole('heading', { name: /iniciar sesión/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/nombre de usuario/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/contraseña/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/ingresa tu usuario/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/ingresa tu contraseña/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /iniciar sesión/i })).toBeInTheDocument();
   });
 
@@ -49,8 +52,8 @@ describe('CompanyLogin Component', () => {
     
     render(<CompanyLogin onSwitchToRegister={mockOnSwitchToRegister} />);
     
-    await user.type(screen.getByLabelText(/nombre de usuario/i), 'testuser');
-    await user.type(screen.getByLabelText(/contraseña/i), 'password123');
+    await user.type(screen.getByPlaceholderText(/ingresa tu usuario/i), 'testuser');
+    await user.type(screen.getByPlaceholderText(/ingresa tu contraseña/i), 'password123');
     await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
     
     await waitFor(() => {
@@ -76,8 +79,8 @@ describe('CompanyLogin Component', () => {
     
     render(<CompanyLogin onSwitchToRegister={mockOnSwitchToRegister} />);
     
-    await user.type(screen.getByLabelText(/nombre de usuario/i), 'wronguser');
-    await user.type(screen.getByLabelText(/contraseña/i), 'wrongpass');
+    await user.type(screen.getByPlaceholderText(/ingresa tu usuario/i), 'wronguser');
+    await user.type(screen.getByPlaceholderText(/ingresa tu contraseña/i), 'wrongpass');
     await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
     
     await waitFor(() => {
@@ -99,10 +102,37 @@ describe('CompanyLogin Component', () => {
     const user = userEvent.setup();
     render(<CompanyLogin onSwitchToRegister={mockOnSwitchToRegister} />);
     
+    // First trigger validation errors
     await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
     expect(screen.getByText(/el usuario es obligatorio/i)).toBeInTheDocument();
     
-    await user.type(screen.getByLabelText(/nombre de usuario/i), 'test');
+    // Then start typing to clear the error
+    await user.type(screen.getByPlaceholderText(/ingresa tu usuario/i), 'test');
     expect(screen.queryByText(/el usuario es obligatorio/i)).not.toBeInTheDocument();
+  });
+
+  test('displays loading state during form submission', async () => {
+    const user = userEvent.setup();
+    
+    // Mock a delayed response
+    (global.fetch as jest.Mock).mockImplementation(() => 
+      new Promise(resolve => 
+        setTimeout(() => resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, data: {} })
+        }), 100)
+      )
+    );
+    
+    render(<CompanyLogin onSwitchToRegister={mockOnSwitchToRegister} />);
+    
+    await user.type(screen.getByPlaceholderText(/ingresa tu usuario/i), 'testuser');
+    await user.type(screen.getByPlaceholderText(/ingresa tu contraseña/i), 'password123');
+    
+    const submitButton = screen.getByRole('button', { name: /iniciar sesión/i });
+    await user.click(submitButton);
+    
+    // The button should be disabled during loading
+    expect(submitButton).toBeDisabled();
   });
 });
