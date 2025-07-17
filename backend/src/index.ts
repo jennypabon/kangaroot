@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import companyRoutes from './routes/companyRoutes';
 import authRoutes from './routes/authRoutes';
+import vehicleRoutes from './routes/vehicleRoutes';
+import slotRoutes from './routes/slotRoutes';
 import './config/database';
 
 dotenv.config();
@@ -17,6 +19,8 @@ app.use(express.json());
 // Routes
 app.use('/api/companies', companyRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/slots', slotRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

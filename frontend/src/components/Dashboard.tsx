@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import EditCompanyProfile from './EditCompanyProfile';
+import VehicleManagement from './VehicleManagement';
 
 interface Company {
   id: number;
@@ -223,22 +224,7 @@ const Dashboard: React.FC = () => {
 
         {/* Vehicles Section */}
         {currentSection === 'vehicles' && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Gestión de Vehículos
-            </h2>
-            <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              <svg className="w-16 h-16 text-blue-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h4a1 1 0 011 1v2a1 1 0 01-1 1h-1v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8H3a1 1 0 01-1-1V5a1 1 0 011-1h4z" />
-              </svg>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Sección de Vehículos
-              </h3>
-              <p className="text-gray-600">
-                Aquí podrás gestionar todos los vehículos de tu flota de transporte de mascotas.
-              </p>
-            </div>
-          </div>
+          <VehicleManagement />
         )}
 
         {/* Routes Section */}

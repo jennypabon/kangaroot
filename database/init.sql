@@ -39,3 +39,30 @@ CREATE TRIGGER update_companies_updated_at
     BEFORE UPDATE ON companies 
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
+
+-- Create vehicles table
+CREATE TABLE IF NOT EXISTS vehicles (
+    id SERIAL PRIMARY KEY,
+    license_plate VARCHAR(20) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    company_id INTEGER NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
+);
+
+-- Create unique constraint for license plate per company
+CREATE UNIQUE INDEX IF NOT EXISTS idx_vehicles_license_plate_company 
+    ON vehicles(license_plate, company_id) 
+    WHERE is_active = true;
+
+-- Create indexes for faster lookups
+CREATE INDEX IF NOT EXISTS idx_vehicles_company_id ON vehicles(company_id);
+CREATE INDEX IF NOT EXISTS idx_vehicles_is_active ON vehicles(is_active);
+
+-- Create trigger to update updated_at timestamp for vehicles
+CREATE TRIGGER update_vehicles_updated_at 
+    BEFORE UPDATE ON vehicles 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
